@@ -1,6 +1,6 @@
 /******************************************************************************
  * $File: day4.go $
- * $Date: 2025-12-28 14:49:30 E. Africa Standard Time $
+ * $Date: 2026-01-02 01:30:30 E. Africa Standard Time $
  * $Revision: 1.0 $
  * $Creator: Mike4847 $
  * $Notice: (C) Copyright 2025 by BanditMan, Inc. All Rights Reserved. $
@@ -17,10 +17,20 @@ import (
 
 func main() {
 	grid := readFileToGrid("rolls.txt")
-	printGrid(grid)
+	//printGrid(grid)
 
-	count := countAccessible(grid)
-	fmt.Printf("\nAccessible rolls: %d\n", count)
+	totalRemoved := 0
+	
+	//TODO(mike): Remove the "MARKED" accessibles in each iterations. 
+	
+	for{
+		count := countAccessible(grid)
+		if count == 0{
+			break
+		}
+		totalRemoved += count
+	}
+	fmt.Printf("\nAnd after the removal the total is %d\n", totalRemoved)
 }
 
 func readFileToGrid(filename string) [][]string {
@@ -55,13 +65,16 @@ func printGrid(grid [][]string) {
 		fmt.Println()
 	}
 }
-
+//NOTE(mike): first pass is to identify the accesibles
+// the second pass is for removing the accessibles on a single pass
 func countAccessible(grid [][]string) int {
 	if len(grid) == 0 {
 		return 0
 	}
 
 	accessible := 0
+	toremove := [][2]int{}
+	
 
 	for i := 0; i < len(grid); i++ {
 		for j := 0; j < len(grid[i]); j++ {
@@ -70,13 +83,19 @@ func countAccessible(grid [][]string) int {
 
 				if adjacentRolls < 4 {
 					accessible++
+					toremove = append(toremove, [2]int{i, j})					
 				}
 			}
 		}
 	}
 
+	for _, cell :=  range toremove {
+		grid[cell[0]][cell[1]] = "."
+	}
+
 	return accessible
 }
+
 
 func countAdjacentRolls(grid [][]string, i int, j int) int {
 	count := 0
