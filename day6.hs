@@ -1,6 +1,5 @@
 module Main where
 import System.IO
-import Data.Array
 import Data.Char (isDigit, isSpace)
 import Data.List (groupBy)
 
