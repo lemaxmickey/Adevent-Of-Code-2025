@@ -1,5 +1,5 @@
 module Main where
-import System.IO
+import System.IO 
 import Data.Char (isDigit, isSpace)
 import Data.List (groupBy)
 
@@ -25,11 +25,15 @@ parseOperators row =
     let tokens = zip [0..] (words row)
     in [(pos, head op) | (pos, op) <- tokens, op == "+" || op == "*"]
 
+
+
 -- Apply an operator to a list of numbers
 applyOp :: Char -> [Integer] -> Integer
 applyOp '+' nums = sum nums
 applyOp '*' nums = product nums
-applyOp _ nums = sum nums  -- default to sum
+applyOp _ nums = sum nums  
+
+
 
 -- Get the value at a specific column position from parsed numbers
 getNumberAtPos :: [(Int, Integer)] -> Int -> Maybe Integer
