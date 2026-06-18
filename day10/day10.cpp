@@ -65,7 +65,7 @@ int solve_min_toggles(std::string_view indicator,
   std::queue<std::pair<uint64_t, int>> q{};
   std::vector<bool> visited(1ULL << N, false);
 
-  q.push({button_masks.back(), 0});
+  q.push({0, 0});
   visited[0] = true;
 
   while (!q.empty()) {
@@ -108,7 +108,7 @@ int main() {
   std::string line;
   int line_idx = 1;
 
-  size_t ans = 0;
+  int ans = 0;
   while (std::getline(file, line)) {
     if (line.empty())
       continue;
