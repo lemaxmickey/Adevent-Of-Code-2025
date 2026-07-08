@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <charconv>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -18,16 +19,41 @@ constexpr std::string_view remove_suf_pre(std::string_view strv) noexcept {
                             : strv.substr(1, strv.size() - 2);
 }
 
-/**
- * @brief Converts binary string_view to numeric bitmask.
- * Basis: \sum_{i=0}^{n-1} b_i 2^{n-1-i}
- *
- */
-uint64_t string_to_mask(std::string_view s) {
-  uint64_t mask = 0;
-  for (char c : s) {
-    mask = (mask << 1) | (c == '1' ? 1 : 0);
+auto target_to_mask(std::string_view sv) -> uint64_t {
+  // NOTE(mickey): The idea is you're given a string with certaine configuration
+  //  i need the binary equivalent of the same .
+  uint64_t mask{};
+  mask <<= 1;
+  for (auto c : sv) {
+    if (c == '#')
+      mask |= 1;
   }
+  return mask;
+}
+/**
+ * @brief Converts string to bitmask.
+ * @return bitmask representation of the string view.
+ */
+auto config_to_mask(std::string_view sv) {
+  // NOTE(mickey): i need the binary mask of the configuration.
+  // TODO(mike):
+  uint64_t mask = 0;
+  size_t pos = 0;
+  while (pos < sv.size()) {
+    if (sv[pos] == ' ' || sv[pos] == ',') { // skip the spaces and comma
+      continue;
+    }
+
+    uint64_t bit_index = 0;
+
+    auto [ptr, err] =
+        std::from_chars(sv.begin(), sv.begin() + sv.size(), bit_index);
+    // no need for success check, this is because the samples are pre-formated
+    // and is structured
+
+    mask |= (1ULL << bit_index);
+  }
+
   return mask;
 }
 
@@ -51,23 +77,23 @@ int solve_min_toggles(std::string_view indicator,
   if (N > 30)
     return -2;
 
-  const uint64_t target_configuration = string_to_mask(target_view);
-  const uint64_t field_mask = (1ULL << N) - 1;
-  // std::cout << "Complex sytems " << field_mask << std::endl;
+  const uint64_t target_configuration = target_to_mask(indicator);
 
   std::vector<uint64_t> button_masks;
   button_masks.reserve(buttons.size());
   for (const auto &b : buttons) {
-    uint64_t b_mask = string_to_mask(remove_suf_pre(b)) & field_mask;
+    uint64_t b_mask = config_to_mask(remove_suf_pre(b));
     button_masks.push_back(b_mask);
   }
 
   std::queue<std::pair<uint64_t, int>> q{};
   std::vector<bool> visited(1ULL << N, false);
 
+  // bug ??
   q.push({0, 0});
   visited[0] = true;
 
+  // current needs to be a bitfield..!!
   while (!q.empty()) {
     const auto [current, dist] = q.front();
     q.pop();
@@ -122,11 +148,9 @@ int main() {
     if (chunks.size() < 2)
       continue;
 
-    // Logical Domain Mapping
     std::string_view indicator = chunks.front();
     std::string_view joltage = chunks.back();
 
-    // Isolate button schematics (indices 1 to n-2)
     std::vector<std::string_view> buttons;
     if (chunks.size() > 2) {
       buttons.assign(chunks.begin() + 1, chunks.end() - 1);
@@ -148,7 +172,6 @@ int main() {
     } else {
       std::cout << "  >> Result: Failure. Path non-existent in vector space.\n";
     }
-    std::cout << "--------------------------------------------------\n";
   }
 
   std::cout << "The answer is " << ans << std::endl;
